@@ -1,5 +1,8 @@
 export const CellSize = 100;
 export const CellGap = 3;
+export const DefenderCose = 100;
+export const DefenderHeath = 100;
+export const NumberOfResources = 300;
 
 export const Mouse = {
     x: undefined,
@@ -30,9 +33,23 @@ export class Cell{
         this.width = CellSize;
         this.height = CellSize;
     }
-    draw(ctx){
-        ctx.strokeStyle='black';
-        ctx.strokeRect(this.x, this.y, this.width, this.height);
-
+    draw(ctx, mouse){
+        if(mouse.x && mouse.y &&  collision(this, mouse))
+        {
+            ctx.strokeStyle='black';
+            ctx.strokeRect(this.x, this.y, this.width, this.height);
+        }
     }
+};
+
+export const collision = (a, b) => {
+    if(
+        !(a.x > b.x + b.width ||
+          a.x +a.width < b.x ||
+          a.y > b.y + b.height ||
+          a.y + a.height < b.height)  
+    ){
+        return true;
+    }
+    return false;
 };

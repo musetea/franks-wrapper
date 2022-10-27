@@ -1,12 +1,16 @@
 <script>
 	import { onMount } from 'svelte';
-    import { ControlBar, CellSize, Cell} from './lib';
-    import { Mouse } from './lib';
+    import { ControlBar, CellSize, DefenderCose, NumberOfResources} from './lib';
+    import { Mouse, Cell } from './lib';
+    import { collision } from './lib';
+    import { Defender} from './defender';
 
     let canvas, ctx;
     let canvasPosition;
     let controlBar;
     const gridCells =[];
+    const defenders = [];
+
     const mouse = Mouse;
     console.log(mouse);
 
@@ -22,6 +26,7 @@
     const initGame = () => {
         controlBar = new ControlBar(canvas.width, 'blue');
         createGrid();
+        handleDefenders();
 
 
         animate();
@@ -47,9 +52,15 @@
 
     function handleGameGrid(){
         for(let i=0; i < gridCells.length; i++){
-            gridCells[i].draw(ctx);
+            gridCells[i].draw(ctx, mouse);
         }
     };
+
+    function handleDefenders(){
+        for(let i=0; i<defenders.length; i++){
+            defenders[i].draw(ctx);
+        }
+    }
 
     const onCanvasMouseMove = (e)=> {
         mouse.x = e.x - canvasPosition.left;
@@ -61,10 +72,23 @@
     };
     const onCanvasMouseDown = (e) => {
         mouse.click = true;
-        console.log(mouse);
+        
     };
     const onCanvasMouseUp = (e) => {
         mouse.click = false;
+    };
+
+    const onCanvasClick = (e) => {
+        const gridPositionX = mouse.x - (mouse.x % CellSize);
+        const gridPositionY = mouse.y - (mouse.y % CellSize);
+        console.log(gridPositionX, gridPositionY);
+        if(gridPositionY < CellSize) return;
+        
+        let defenderCose = DefenderCose;
+        if(NumberOfResources > defenderCose){
+            defenders.push(new Defender(gridPositionX, gridPositionY));
+        }
+        console.log(mouse);
     };
 
 </script>
@@ -75,6 +99,7 @@
     on:mouseleave={onCanvasMouseLeave}
     on:mousedown={onCanvasMouseDown}
     on:mouseup={onCanvasMouseUp}
+    on:click={onCanvasClick}
 >
 </canvas>
 
