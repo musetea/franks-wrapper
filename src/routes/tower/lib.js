@@ -7,6 +7,12 @@ export const FONT_SIZE = 30;
 export const FONT_FAMILY = 'Orbitron';
 export const EnemyHeath = 100;
 export const EnermyInterval = 600;
+export const STATIC = '/tower/';
+
+export const Aliens = [
+    'alien4.png', 'alien5.png', 'alien9.png', 'alien11.png',
+    'alien12.png', 'alien12.png', 'alien15.png'
+];
 
 
 export const Mouse = {
