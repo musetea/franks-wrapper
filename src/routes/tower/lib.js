@@ -10,8 +10,23 @@ export const EnermyInterval = 600;
 export const STATIC = '/tower/';
 
 export const Aliens = [
-    'alien4.png', 'alien5.png', 'alien9.png', 'alien11.png',
-    'alien12.png', 'alien12.png', 'alien15.png'
+    'alien1.png', 'alien2.png', 'alien3.png', 'alien4.png',
+    'alien5.png', 'alien6.png'
+];
+export const Defenders = [
+    'boy_1.png', 'girl_1.png'
+];
+export const EnemyTypes =[
+    { 'name':'ALIEN1', 'len':6, 'width':386, 'height':258 }, 
+    { 'name':'ALIEN2', 'len':5, 'width':258, 'height':258 }, 
+    { 'name':'ALIEN3', 'len':8, 'width':258, 'height':258 }, 
+    { 'name':'ALIEN4', 'len':5, 'width':258, 'height':258 }, 
+    { 'name':'ALIEN5', 'len':8, 'width':258, 'height':258 }, 
+    { 'name':'ALIEN6', 'len':9, 'width':258, 'height':258 }, 
+];
+export const DefenderTypes =[
+    { 'name':'BOY', 'len':17, 'width':194, 'height':194 }, 
+    { 'name':'GIRL', 'len':17, 'width':194, 'height':194 }
 ];
 
 
@@ -57,9 +72,9 @@ export const collision = (a, b) => {
     if(!a || !b) return false;
     if(
         !(a.x > b.x + b.width ||
-          a.x +a.width < b.x ||
+          a.x + a.width < b.x ||
           a.y > b.y + b.height ||
-          a.y + a.height < b.height)  
+          a.y + a.height < b.y)  
     ){
         return true;
     }
@@ -111,4 +126,41 @@ export class FloatingMessage{
         ctx.fillText(this.value, this.x, this.y);
         ctx.globalAlpha = 1;
     }
-}
+};
+
+export class Card{
+    constructor(x, y, img){
+        this.x = x;
+        this.y = y;
+        this.width = CellSize*0.8;
+        this.height = CellSize*0.8;
+        this.image = img;
+        this.color = 'black';
+        this.selected = false;
+        this.mouseOver = false;
+    }
+    update(hover){
+        if(hover){
+            this.color = 'gold'
+        }else{
+
+        }
+    };
+    selected(){
+        this.selected = true;
+        this.color = 'white';
+    }
+
+    draw(ctx){
+        ctx.lineWidth = 1;
+        if(this.selected){
+            ctx.strokeStyle = 'white';
+        }else{
+            ctx.strokeStyle = this.color;
+        }
+        ctx.strokeRect(this.x + 10, this.y + 10, this.width, this.height);
+        ctx.drawImage(this.image, 
+            0,0,194,194, 
+            this.x, this.y, 97, 97);
+    };
+};

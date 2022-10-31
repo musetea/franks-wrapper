@@ -4,6 +4,7 @@
     import { Mouse, Cell, FloatingMessage  } from './lib';
     import { collision } from './lib';
     import { FONT_FAMILY, FONT_SIZE } from './lib';
+    import { Aliens, EnemyTypes,Defenders, DefenderTypes, Card} from './lib';
 
     import { Defender} from './defender';
     import { Enemy} from './enemy';
@@ -14,8 +15,12 @@
     let canvasPosition;
     let controlBar;
     const gridCells =[];
+    const cards =[];
     const defenders = [];
+    const defenderItems =[];
     const enermies = [];
+    const enermieItems = [];
+
     const enermiesPositions = [];
     let enemyInterval = EnermyInterval;
     const projectiles = [];
@@ -28,6 +33,9 @@
     let isGameOver = false;
     let score = 0;
     let winningScore = 10;
+    let selectedDefender = 0;
+
+    
 
     onMount(()=>{
         ctx = canvas.getContext('2d');
@@ -35,10 +43,11 @@
         canvas.height = 600;
         canvasPosition = canvas.getBoundingClientRect();
         console.log(canvasPosition);
-        initGame();
+        init();
     })
 
-    const initGame = () => {
+    const init = () => {
+        loadImage();       
         controlBar = new ControlBar(canvas.width, 'blue');
         createGrid();
         handleDefenders();
@@ -46,6 +55,35 @@
 
         animate();
     };
+    
+    const loadImage = () =>{
+        enermieItems.splice(0, enermieItems.length);    // 기존항목삭제
+        Aliens.forEach((alien, i) => {
+            const img = new Image()
+            img.src = `/tower/${alien}`
+            enermieItems.push({'image': img, ...EnemyTypes[i]})
+        });
+
+        defenderItems.splice(0, defenderItems.length);
+        Defenders.forEach((defender, i) => {
+            const img = new Image();
+            img.src =  `/tower/${defender}`
+            defenderItems.push({'image':img, ...DefenderTypes[i]});
+        });
+        
+        cards.splice(0, cards.length);
+        const img1 = new Image();
+        img1.src = `/tower/${'boy_0.png'}`
+        cards.push(new Card(0 * CellSize, 0, img1));
+
+        const img2 = new Image();
+        img2.src = `/tower/${'girl_0.png'}`
+        cards.push(new Card(1 * CellSize, 0, img2));
+
+        
+        
+    };
+    
     const createGrid = ()=> {
         console.log(controlBar);
         for(let y = CellSize; y < canvas.height; y+=CellSize){
@@ -54,12 +92,14 @@
             }
         }
     };
+    
 
     function animate(){
         if(!canvas) return;
         ctx.clearRect(0,0,canvas.width, canvas.height);
         controlBar.draw(ctx);
         handleGameGrid();
+        handleCards();
         handleDefenders();
         handleProjectiles();
         handleEnermies();
@@ -79,13 +119,20 @@
         }
     };
 
+    function handleCards(){
+        cards.forEach(card => {
+            card.update(collision(mouse, card), mouse.click);
+            card.draw(ctx)
+        });
+    }
+
     function handleDefenders(){
         for(let i=0; i<defenders.length; i++){
             //const defender = defenders[i];
             //if(!defender) break;
 
             defenders[i].draw(ctx);
-            const tile = defenders[i].update();
+            const tile = defenders[i].update(frame);
             if(tile) projectiles.push(tile);
 
             // ENEMY 체크 
@@ -94,7 +141,7 @@
             }else{
                 defenders[i].shooting = false;
             }
-            console.log(enermiesPositions, defenders[i]);
+            //console.log(enermiesPositions, defenders[i]);
 
 
             //defenders[i].handleProjectiles(ctx, canvas.width);
@@ -120,8 +167,8 @@
         
         const str = `Resources : ${numberOfResources}`;
         const str1 = `Score : ${score}`;
-        ctx.fillText(str1, 10,30)
-        ctx.fillText(str, 10,60);
+        ctx.fillText(str1, (cards.length*CellSize) ,30)
+        ctx.fillText(str, (cards.length*CellSize),60);
 
         if(isGameOver){
             displayGameOver();
@@ -150,7 +197,7 @@
 
     function handleEnermies(){
         for(let i=0; i<enermies.length; i++){
-            enermies[i].update();
+            enermies[i].update(frame);
             enermies[i].draw(ctx);
 
             // 게임오버체크 
@@ -168,7 +215,7 @@
                 const findThidY  = enermiesPositions.indexOf(enermies[i].y);
                 if(findThidY !== -1){
                     enermiesPositions.splice(findThidY, 1);
-                    console.log(enermiesPositions);
+                    //console.log(enermiesPositions);
                 }
                 enermies.splice(i, 1);
                 i--;
@@ -176,8 +223,12 @@
         }
 
         if(frame % enemyInterval === 0 && score < winningScore ) {
+            
+            // 적생성 
             const verticalPosition = Math.floor(Math.random() * 5 + 1) * CellSize + CellGap;
-            enermies.push(new Enemy(canvas.width, verticalPosition))
+            const enemyType = enermieItems[Math.floor(Math.random() *enermieItems.length)];
+            console.log(enemyType);
+            enermies.push(new Enemy(canvas.width, verticalPosition, enemyType))
             enermiesPositions.push(verticalPosition);
             
             if(enemyInterval > 120){
@@ -268,7 +319,17 @@
     };
     const onCanvasMouseDown = (e) => {
         mouse.click = true;
-        
+        for(let i=0; i<cards.length; i++){
+            const card = cards[i];
+
+            if(collision(card, mouse)){
+                cards.forEach(c => c.selected=false);
+                card.selected = true;
+                selectedDefender = i;
+                break;
+            }
+        }
+        console.log(cards, mouse);
     };
     const onCanvasMouseUp = (e) => {
         mouse.click = false;
@@ -297,7 +358,11 @@
     const addDefender = (x, y) => {
         let defenderCose = DefenderCose;
         if(numberOfResources >= defenderCose){
-            defenders.push(new Defender(x, y));
+            // const defenderType = defenderItems[Math.floor(Math.random() * defenderItems.length)];
+            const defenderType = defenderItems[selectedDefender];
+            console.log(defenderType);
+
+            defenders.push(new Defender(x, y, defenderType));
             numberOfResources -= defenderCose;
         }else{
             floatingMessages.push(new FloatingMessage('need more resource', mouse.x, mouse.y, 15, 'blue'))
