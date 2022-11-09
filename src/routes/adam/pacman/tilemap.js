@@ -1,23 +1,28 @@
 import Pacman from './pacman';
+import Enemy from './enemy';
+import MovingDirection from './movingDirection';
 
 // 1: WALL
 // 0: YELLOW DOT
 // 4: PAC MAN
+// 5: EMPTY SPACE
+// 6: ENEMY
 
 const map = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,0,0,0,4,0,0,0,0,0,0,0,1],
     [1,0,1,1,1,1,1,1,0,0,1,0,1],
-    [1,0,1,0,0,0,0,0,0,0,1,0,1],
+    [1,0,1,6,0,0,0,0,0,0,1,0,1],
     [1,0,1,0,1,1,1,1,1,0,1,0,1],
     [1,0,1,0,1,0,0,0,1,0,1,0,1],
     [1,0,0,0,1,0,0,0,1,0,1,0,1],
     [1,0,1,0,1,0,1,0,1,0,1,0,1],
     [1,0,1,0,1,0,1,0,1,0,0,0,1],
     [1,0,1,0,1,0,1,0,0,0,1,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,6,0,0,0,0,0,0,0,0,0,6,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1],
 ];
+
 
 export default class TileMap{
     constructor(tileSize){
@@ -51,6 +56,75 @@ export default class TileMap{
                 }
             }
         }
+    };
+
+    getEnemies(velocity){
+        const enemies = [];
+        for(let row=0; row <map.length; row++){
+            for(let column=0; column < map[row].length; column++){
+                const tile = map[row][column];
+                if(tile === 6){
+                    map[row][column] = 0;
+                    enemies.push(new Enemy(column*this.tileSize, row*this.tileSize, this.tileSize, velocity, this));
+                }
+            }
+        }
+        return enemies;
+    }
+
+    didCollideWithEnvironment(x, y, direction){
+        if(direction == null){
+            return;
+        }
+
+        if(Number.isInteger(x/this.tileSize) && 
+            Number.isInteger(y/this.tileSize)){
+            let column = 0;
+            let row = 0;
+            let nextColumn = 0;
+            let nextRow = 0;
+            switch(direction){
+                case MovingDirection.right:
+                    nextColumn = x + this.tileSize;
+                    column = nextColumn / this.tileSize;
+                    row = y / this.tileSize;
+                    break;
+                case MovingDirection.left:
+                    nextColumn = x - this.tileSize;
+                    column = nextColumn / this.tileSize;
+                    row = y / this.tileSize;
+                    break;
+                case MovingDirection.up:
+                    nextRow = y - this.tileSize;
+                    row = nextRow / this.tileSize;
+                    column = x / this.tileSize;
+                    break;
+                case MovingDirection.down:
+                    nextRow = y + this.tileSize;
+                    row = nextRow / this.tileSize;
+                    column = x / this.tileSize;
+                    break;
+            }
+
+            const tile = map[row][column];
+            if(tile === 1){
+                return true;
+            }
+        }
+        return false;
+    };
+
+    eatDot(x, y){
+        const row = y / this.tileSize;
+        const column = x / this.tileSize;
+        if(Number.isInteger(row) && Number.isInteger(column)){
+            // YELLOW DOT 체크 
+            if(map[row][column] === 0){
+                map[row][column] = 5;
+                return true;
+            }
+        }
+        return false;
     }
 
 
@@ -71,9 +145,12 @@ export default class TileMap{
                     case 0:
                         this.$drawDot(ctx, column, row, this.tileSize);
                         break;
+                    case 5: 
+                        this.$drawBlank(ctx, column, row, this.tileSize);
+                        break;
                 }
 
-                this.$drawGrid(ctx, column, row, this.tileSize);
+                //this.$drawGrid(ctx, column, row, this.tileSize);
             }
         }
     };
@@ -99,4 +176,8 @@ export default class TileMap{
             size,
             size);
     };
+    $drawBlank(ctx, column, row, size){
+        ctx.fillStyle='black';
+        ctx.fillRect(column*size, row*size, size, size);
+    }
 }
