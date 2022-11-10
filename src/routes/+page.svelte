@@ -1,20 +1,7 @@
-<h2>Welcome to Franks laboratory</h2>
-<h3>css</h3>
-<ul>
-	<li><a href="css/border">border</a></li>
-	<li><a href="css/buttons">Button's</a></li>
-	<li><a href="css/checkbox">CheckBox</a></li>
-	<li><a href="css/cube">Cube</a></li>
-	<li><a href="css/droid">Droid</a></li>
-	<li><a href="css/parallax">Parallax</a></li>
-	<li><a href="css/illusions">Illusions</a></li>
-	<li><a href="css/morph">Morph</a></li>
-	<li><a href="css/login">Login</a></li>
-	<li><a href="css/stroke">Stroke</a></li>
-	<li><a href="css/svgTurbulence">SVG Turbulence</a></li>
-	<li><a href="css/testdistortion">TEXT Distortion</a></li>
-	<li><a href="css/liquid">Liquid</a></li>
-</ul>
+<h1>Frank & Chris</h1>
+<h2>Frank</h2>
+<h2>Chris</h2>
+<a href="/chris/">Chirs Courese</a>
 <h3>javascrapt</h3>
 <ul>
 	<li><a href="js/owlbear">Owalbear</a></li>
