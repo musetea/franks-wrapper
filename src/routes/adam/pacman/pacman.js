@@ -23,7 +23,15 @@ export default class Pacman{
         this.animatonTimer = null;
 
         this.rotation = Rotation.right;
-        this.waka = undefined;
+        this.adoWaka = undefined;
+        this.adoPowerDot = undefined;
+        this.adoEatGhost = undefined;
+        this.powerDotActive = false;
+        this.powerDotAbouttoExpire = false;
+        this.madeFirstMove = false;
+
+        this.timers = [];
+
 
         document.addEventListener('keydown', this.$keyDown);
         document.addEventListener('keyup', this.$keyUp);
@@ -35,16 +43,28 @@ export default class Pacman{
     };
 
     setWakaSound(sound){
-        this.waka = sound;
+        this.adoWaka = sound;
+    };
+    setPowerDotSound(sound){
+        this.adoPowerDot = sound;
+    };
+    setEatGhostSound(sound){
+        this.adoEatGhost = sound;
     };
 
 
-    update(ctx){
-        this.$move();
-        this.$animate();
+    update(ctx, pause, enemies){
+        if(!pause){
+            this.$move();
+            this.$animate();
+        }
         this.$eatDot();
+        this.$eatPowerDot();
+        this.$eatGhost(enemies);
         this.$draw(ctx);
     };
+
+    
 
     $draw(ctx){
         if(this.pacmanImages.length <= 0)   return;
@@ -64,6 +84,8 @@ export default class Pacman{
         //     this.tileSize); 
 
     };
+
+    
 
     $move(){
         if(this.currentMovingDirection !== this.requestedMovingDirection){
@@ -123,11 +145,32 @@ export default class Pacman{
         }
     };
 
-    $eatDot(){
-        if(this.tileMap.eatDot(this.x, this.y)){
+    async $eatDot(){
+        if(this.tileMap.eatDot(this.x, this.y) &&
+        this.madeFirstMove){
             // YELLOW DOT SOUND
-            //this.waka && this.waka.play();
-            // console.log(this.waka);
+            this.adoWaka.play();
+        }
+    };
+    async $eatPowerDot(){
+        if(this.tileMap.eatPowerDot(this.x, this.y) &&
+            this.madeFirstMove){
+            // POWER DOT SOUND 
+            this.adoPowerDot.play();
+            //
+            this.powerDotActive = true;
+            this.powerDotAbouttoExpire = false;
+            this.timers.forEach(timer => clearTimeout(timer));
+            this.timers = [];
+            const timer = setTimeout(() => {
+                this.powerDotActive = false;
+                this.powerDotAbouttoExpire = false;
+            }, 1000*6);
+            this.timers.push(timer);
+            const expireTimer = setTimeout(() => {
+                this.powerDotAbouttoExpire = true;
+            }, 3*1000);
+            this.timers.push(expireTimer);
         }
     }
     
@@ -138,28 +181,44 @@ export default class Pacman{
                     this.currentMovingDirection = MovingDirection.up;
                 }
                 this.requestedMovingDirection = MovingDirection.up;
+                this.madeFirstMove = true;
                 break;
             case 40: // down
                 if(this.currentMovingDirection == MovingDirection.up){
                     this.currentMovingDirection = MovingDirection.down;
                 }
                 this.requestedMovingDirection = MovingDirection.down;
+                this.madeFirstMove = true;
                 break;
             case 37: // left
                 if(this.currentMovingDirection == MovingDirection.right){
                     this.currentMovingDirection = MovingDirection.left;
                 }
                 this.requestedMovingDirection = MovingDirection.left;
+                this.madeFirstMove  = true;
                 break;
             case 39: // right
                 if(this.currentMovingDirection == MovingDirection.left){
                     this.currentMovingDirection = MovingDirection.right;
                 }
                 this.requestedMovingDirection = MovingDirection.right;
+                this.madeFirstMove  =true;
                 break;
         }
     }
     $keyUp = (e) => {
 
+    };
+
+    $eatGhost(enemies){
+        if(this.powerDotActive){
+            const collideEnemise = enemies.filter(enemy =>  enemy.collideWith(this));
+            collideEnemise.forEach(enemy => {
+                enemies.splice(enemies.indexOf(enemy), 1);
+                this.adoEatGhost.play();
+            });
+
+        }
+        
     }
 }

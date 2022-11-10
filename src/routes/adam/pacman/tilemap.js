@@ -7,13 +7,14 @@ import MovingDirection from './movingDirection';
 // 4: PAC MAN
 // 5: EMPTY SPACE
 // 6: ENEMY
+// 7: POWER DOT 
 
 const map = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,4,0,0,0,0,0,0,0,1],
+    [1,7,0,0,4,0,0,0,0,0,0,7,1],
     [1,0,1,1,1,1,1,1,0,0,1,0,1],
     [1,0,1,6,0,0,0,0,0,0,1,0,1],
-    [1,0,1,0,1,1,1,1,1,0,1,0,1],
+    [1,0,1,7,1,1,1,1,1,0,1,0,1],
     [1,0,1,0,1,0,0,0,1,0,1,0,1],
     [1,0,0,0,1,0,0,0,1,0,1,0,1],
     [1,0,1,0,1,0,1,0,1,0,1,0,1],
@@ -30,6 +31,11 @@ export default class TileMap{
 
         this.wall=undefined;
         this.yellowDot = undefined;
+        this.pinkDot = undefined;
+        this.powerDot = undefined;
+
+        this.timerDef = 30
+        this.timer = this.timerDef ;
     };
 
     setWallImage(image){
@@ -37,6 +43,10 @@ export default class TileMap{
     };
     setYellowDotImage(image){
         this.yellowDot = image;
+    };
+    setPinkDotImage(image){
+        this.pinkDot = image;
+        this.powerDot = this.pinkDot;
     };
 
     setCanvasSize(canvas){
@@ -58,14 +68,16 @@ export default class TileMap{
         }
     };
 
-    getEnemies(velocity){
+    getEnemies(velocity, images){
         const enemies = [];
         for(let row=0; row <map.length; row++){
             for(let column=0; column < map[row].length; column++){
                 const tile = map[row][column];
                 if(tile === 6){
                     map[row][column] = 0;
-                    enemies.push(new Enemy(column*this.tileSize, row*this.tileSize, this.tileSize, velocity, this));
+                    const ghost = new Enemy(column*this.tileSize, row*this.tileSize, this.tileSize, velocity, this);
+                    ghost.setImages(images);
+                    enemies.push(ghost);
                 }
             }
         }
@@ -114,6 +126,10 @@ export default class TileMap{
         return false;
     };
 
+    didWin(){
+        return this.$dotsLeft() === 0;
+    }
+
     eatDot(x, y){
         const row = y / this.tileSize;
         const column = x / this.tileSize;
@@ -125,7 +141,19 @@ export default class TileMap{
             }
         }
         return false;
-    }
+    };
+    eatPowerDot(x, y){
+        const row = y / this.tileSize;
+        const column = x / this.tileSize;
+        if(Number.isInteger(row) && Number.isInteger(column)){
+            //POWER DOT 체크 
+            if(map[row][column] === 7){
+                map[row][column] = 5;
+                return true;
+            }
+        }
+        return false;
+    };
 
 
     update(ctx){
@@ -147,6 +175,9 @@ export default class TileMap{
                         break;
                     case 5: 
                         this.$drawBlank(ctx, column, row, this.tileSize);
+                        break;
+                    case 7: 
+                        this.$drawPowerDot(ctx, column, row, this.tileSize);
                         break;
                 }
 
@@ -179,5 +210,22 @@ export default class TileMap{
     $drawBlank(ctx, column, row, size){
         ctx.fillStyle='black';
         ctx.fillRect(column*size, row*size, size, size);
+    }
+    $drawPowerDot(ctx, column, row, size){
+        this.timer--;
+        if(this.timer == 0){
+            this.timer = this.timerDef; 
+            if(this.powerDot == this.pinkDot){
+                this.powerDot = this.yellowDot;
+            }else{
+                this.powerDot = this.pinkDot;
+            }
+        }
+
+        ctx.drawImage(this.powerDot, 
+            column*size, row*size, size, size);
+    };
+    $dotsLeft(){
+        return map.flat().filter(tile => tile === 0).length;
     }
 }
