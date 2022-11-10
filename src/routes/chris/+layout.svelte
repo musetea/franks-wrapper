@@ -1,3 +1,7 @@
+<svelte:head>
+	<title>Fac Man</title>
+</svelte:head>
+
 <slot />
 
 <style>
