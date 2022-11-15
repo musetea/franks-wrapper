@@ -6,6 +6,7 @@
 	import { Boundary } from './boundary';
 	import Pellet from './pellet';
 	import Ghost from './ghost';
+	import PowerUp from './powerUp';
 
 	let canvas;
 	let context;
@@ -15,6 +16,7 @@
 	const boundaries = [];
 	const pellets = [];
 	const ghosts = [];
+	const powerUps = [];
 	let animationID;
 	const player = new Player({
 		position: {
@@ -49,7 +51,7 @@
 				y: 0
 			}
 		});
-		ghosts.push(g);
+		//ghosts.push(g);
 	};
 
 	const loadImages = () => {
@@ -181,6 +183,28 @@
 						});
 						pellets.push(pellet);
 						break;
+					case 'p':
+						const powerUp = new PowerUp({
+							position: {
+								x: j * CELL_WIDTH + CELL_WIDTH / 2,
+								y: i * CELL_HEIGHT + CELL_HEIGHT / 2
+							}
+						});
+						powerUps.push(powerUp);
+						break;
+					case 'g':
+						const ghost = new Ghost({
+							position: {
+								x: j * CELL_WIDTH + CELL_WIDTH / 2,
+								y: i * CELL_HEIGHT + CELL_HEIGHT / 2
+							},
+							velocity: {
+								x: -Ghost.speed,
+								y: 0
+							}
+						});
+						ghosts.push(ghost);
+						break;
 				}
 			});
 		});
@@ -198,8 +222,51 @@
 				player.collision();
 			}
 		});
+
+		for (let i = ghosts.length - 1; 0 <= i; i--) {
+			const ghost = ghosts[i];
+
+			const side1 = ghost.position.x - player.position.x;
+			const side2 = ghost.position.y - player.position.y;
+			const radius = ghost.radius + player.radius;
+			if (Math.hypot(side1, side2) < radius) {
+				if (ghost.scared) {
+					ghosts.splice(i, 1);
+				} else {
+					console.log('collision ghost and player');
+					cancelAnimationFrame(animationID);
+				}
+			}
+		}
+
+		// 승리조건
+		if (pellets.length === 0) {
+			console.log('you win!!!');
+			cancelAnimationFrame(animationID);
+		}
+
+		for (let i = powerUps.length - 1; 0 <= i; i--) {
+			const powerUp = powerUps[i];
+			powerUp.update(context);
+
+			const x = powerUp.position.x - player.position.x;
+			const y = powerUp.position.y - player.position.y;
+			const radius = powerUp.radius + player.radius;
+			if (Math.hypot(x, y) < radius) {
+				powerUps.splice(i, 1);
+
+				ghosts.forEach((ghost) => {
+					ghost.scared = true;
+
+					setTimeout(() => {
+						ghost.scared = false;
+					}, 3000);
+				});
+			}
+		}
+
 		// 화면 떨림 방지  for 문 사용
-		for (let i = pellets.length - 1; 0 < i; i--) {
+		for (let i = pellets.length - 1; 0 <= i; i--) {
 			const pellet = pellets[i];
 			pellet.update(context);
 
@@ -220,16 +287,9 @@
 		// 	}
 		// });
 		player.update(context);
+
 		ghosts.forEach((ghost) => {
 			ghost.update(context);
-
-			const side1 = ghost.position.x - player.position.x;
-			const side2 = ghost.position.y - player.position.y;
-			const radius = ghost.radius + player.radius;
-			if (Math.hypot(side1, side2) < radius) {
-				console.log('collision ghost and player');
-				cancelAnimationFrame(animationID);
-			}
 
 			const collisions = [];
 			boundaries.forEach((boundary) => {
@@ -297,9 +357,8 @@
 					//console.log('collision ghost down');
 					collisions.push('down');
 				}
-				//console.log(collisions);
 
-				if (collisions.length > ghost.prevCollisions.length) {
+				/*				if (collisions.length > ghost.prevCollisions.length) {
 					ghost.prevCollisions = collisions;
 				}
 				//console.log(ghost.prevCollisions);
@@ -343,8 +402,9 @@
 							break;
 					}
 					ghost.prevCollisions = [];
-				}
+				}*/
 			});
+			ghost.autoRun(collisions);
 		});
 	};
 

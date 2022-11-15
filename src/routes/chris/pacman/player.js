@@ -4,6 +4,9 @@ export class Player{
         this.position = position;
         this.velocity = velocity;
         this.radius = 15;
+        this.radians = 0.75;
+        this.openRate = 0.12;
+        this.rotation = 0;
     }
     
     up(speed){
@@ -28,6 +31,17 @@ export class Player{
         // this.$move(keys, lastKey);
         this.position.y += this.velocity.y;
         this.position.x += this.velocity.x;
+
+        if(this.velocity.x > 0) this.rotation = 0;
+        else if(this.velocity.x < 0) this.rotation = Math.PI;
+        else if(this.velocity.y > 0) this.rotation = Math.PI / 2;
+        else if(this.velocity.y < 0) this.rotation = Math.PI * 1.5;
+
+
+        if(this.radians < 0 || this.radians > 0.75){
+            this.openRate = -this.openRate;
+        }
+        this.radians += this.openRate;
         
     };
 
@@ -87,10 +101,17 @@ export class Player{
         if(!c)return;
         const { x, y} = this.position;
         const { radius} = this;
+        c.save();
+        c.translate(this.position.x, this.position.y);
+        c.rotate(this.rotation);
+        c.translate(-this.position.x, -this.position.y);
+
         c.beginPath();
-        c.arc(x, y, radius, 0, Math.PI * 2);
+        c.arc(x, y, radius, this.radians, Math.PI * 2 - this.radians);
+        c.lineTo(this.position.x, this.position.y)
         c.fillStyle='yellow';
         c.fill();
         c.closePath();
+        c.restore();
     };
 };
