@@ -1,16 +1,34 @@
-export class Boundary{
-    static width = 40;
-    static height = 40;
+import { CELL_WIDTH, CELL_HEIGHT } from './setup';
 
-    constructor({position}){
+
+export class Boundary{
+    static width = CELL_WIDTH;
+    static height = CELL_HEIGHT;
+
+    constructor({position, image}){
         this.position = position;
-        this.width = Boundary.width;
-        this.height = Boundary.height;
+        this.width = CELL_WIDTH;
+        this.height = CELL_HEIGHT;
+        this.image = image;
     }
-    draw(c){
+
+    update(ctx){
+        if(!ctx) return;
+        this.$draw(ctx);
+    }
+    
+    /**
+     * 
+     * @param {*} c 
+     * @returns 
+     */
+    $draw(c){
         if(!c) return;
-        c.fillStyle='blue';
-        c.fillRect(this.position.x, this.position.y, this.width, this.height);
+        const { x, y} = this.position;
+        //console.log(x,y);
+        // c.fillStyle='blue';
+        // c.fillRect(x, y, this.width, this.height);
+        c.drawImage(this.image, x, y);
     }
 };
 
