@@ -8,6 +8,8 @@
 
 <style>
 	.container {
-		font-family: 'Helvetica';
+		margin: 0;
+		background-color: black;
+		padding: 10px 20px;
 	}
 </style>
