@@ -2,6 +2,11 @@
 <h2>Frank</h2>
 <h2>Chris</h2>
 <a href="/chris/">Chirs Courese</a>
+<h2>Traversy Media</h2>
+<ul>
+	<li><a href="/traversy">Traversy</a></li>
+</ul>
+
 <h3>javascrapt</h3>
 <ul>
 	<li><a href="js/owlbear">Owalbear</a></li>
